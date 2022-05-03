@@ -11,13 +11,24 @@ module.exports = (app, passport, db) => {
 		}
 	});
 
-	app.get('/api/user/places', function(req,res){
+	app.get('/api/user/places', requireAuth, function(req,res){
 	  var query = `SELECT * FROM places WHERE user_id=1`;
 	  db.query(query, (error,queryRes) => {
 	    if(error){
 	      res.json({error: error})
 	    } else {
 	      res.json({usersRecs: queryRes})
+	    }
+	  });
+	});
+
+	app.post('/api/itinerary', requireAuth, function(req,res){
+		var query = `INSERT INTO itinerary (name, details, user_id) VALUES ('${req.body.itineraryName}','${JSON.stringify(req.body.details)}','${req.session.passport.user.id}')`;
+	  db.query(query, (error,queryRes) => {
+	    if(error){
+	      res.json({success: false, error: error})
+	    } else {
+	      res.json({success: true})
 	    }
 	  });
 	});
@@ -31,6 +42,8 @@ module.exports = (app, passport, db) => {
 			}
 		})(req, res, next);
 	});
+
+
 
 	app.post('/api/sign-in', function(req,res,next){
 		passport.authenticate('local-signin', function(err, user, info){

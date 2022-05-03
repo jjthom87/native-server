@@ -34,7 +34,7 @@ module.exports = (passport, db) => {
         if (!bcrypt.compareSync(password, user[0].password)){
           return done(null, false, {message: 'incorrect password'});
         }
-  			return done(null, {email: user[0].email, token: tokenForUser(user[0])});
+  			return done(null, {id: user[0].id, email: user[0].email, token: tokenForUser(user[0])});
   		});
   	});
   }));

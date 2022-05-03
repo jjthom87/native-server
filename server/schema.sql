@@ -13,3 +13,10 @@ CREATE TABLE places (
 	user_id INT NOT NULL,
 	FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE itinerary (
+	name TEXT NOT NULL,
+	details TEXT NOT NULL,
+	user_id INT NOT NULL,
+	FOREIGN KEY (user_id) REFERENCES users(id)
+)
