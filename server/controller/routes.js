@@ -4,10 +4,8 @@ module.exports = (app, passport, db) => {
 	var requireAuth = passport.authenticate('local-jwt', {session: false});
 
 	app.get('/api/signed-in', requireAuth, function(req,res){
-		if(req.session.passport.user){
+		if(req.session.passport != undefined){
 			res.json({message: 'signed in user', user: req.session.passport.user});
-		} else {
-			res.json({message: 'no signed in user'})
 		}
 	});
 
@@ -31,6 +29,17 @@ module.exports = (app, passport, db) => {
 	      res.json({success: true})
 	    }
 	  });
+	});
+
+	app.get('/api/itinerary', requireAuth, function(req,res){
+		var query = `SELECT * FROM itinerary WHERE user_id=${req.session.passport.user.id}`;
+		db.query(query, (error,queryRes) => {
+			if(error){
+				res.json({success: false, error: error})
+			} else {
+				res.json({success: true, itineraries: queryRes})
+			}
+		});
 	});
 
 	app.post('/api/sign-up', function(req,res,next){
