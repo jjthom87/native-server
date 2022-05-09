@@ -42,6 +42,42 @@ module.exports = (app, passport, db) => {
 		});
 	});
 
+	app.get('/api/users', function(req,res){
+		var query = `SELECT id,email FROM users`;
+		db.query(query, (error,queryRes) => {
+			if(error){
+				res.json({success: false, error: error})
+			} else {
+				if(req.session.passport){
+					queryRes = queryRes.filter((user) => user.id != req.session.passport.user.id)
+				}
+				res.json({success: true, users: queryRes})
+			}
+		});
+	});
+
+	app.get('/api/user/:user_id/itinerary', function(req,res){
+		var query = `SELECT * FROM itinerary WHERE user_id=${req.params.user_id}`;
+		db.query(query, (error,queryRes) => {
+			if(error){
+				res.json({success: false, error: error})
+			} else {
+				res.json({success: true, itineraries: queryRes})
+			}
+		});
+	});
+
+	app.post('/api/itinerary/shared', function(req,res){
+		var query = `INSERT INTO shared_itineraries (owner_id, requester_id, itinerary_id) VALUES ('${req.body.owner_id}','${req.body.requester_id}','${req.body.itinerary_id}')`;
+		db.query(query, (error,queryRes) => {
+			if(error){
+				res.json({success: false, error: error})
+			} else {
+				res.json({success: true, itineraries: queryRes})
+			}
+		});
+	});
+
 	app.post('/api/sign-up', function(req,res,next){
 		passport.authenticate('local-signup', function(err, user, info){
 			if (err) {
