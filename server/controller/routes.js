@@ -78,6 +78,39 @@ module.exports = (app, passport, db) => {
 		});
 	});
 
+	app.get('/api/itinerary/shared', function(req,res){
+		var query = `SELECT itinerary_id,owner_id FROM shared_itineraries WHERE requester_id=${req.session.passport.user.id}`;
+		db.query(query, (error,queryRes) => {
+			if(error){
+				res.json({success: false, error: error})
+			} else {
+				const sharedItineraryIds = queryRes.map((res) => res.itinerary_id);
+				query = `SELECT * FROM itinerary WHERE id in (${sharedItineraryIds.join(",")})`;
+				db.query(query, (error,itineraryQueryRes) => {
+					if(error){
+						res.json({success: false, error: error})
+					} else {
+						query = `SELECT id,email FROM users`;
+						db.query(query, (error,userQueryRes) => {
+							if(error){
+								res.json({success: false, error: error})
+							} else {
+								itineraryQueryRes.forEach((itinerary) => {
+									userQueryRes.forEach((user)=> {
+										if(itinerary.user_id == user.id){
+											itinerary.owner_email = user.email;
+										}
+									})
+								})
+								res.json({success: true, itineraries: itineraryQueryRes})
+							}
+						});
+					}
+				});
+			}
+		});
+	});
+
 	app.post('/api/sign-up', function(req,res,next){
 		passport.authenticate('local-signup', function(err, user, info){
 			if (err) {
