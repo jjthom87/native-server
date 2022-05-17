@@ -32,7 +32,6 @@ var databaseConnection = mysql.createConnection(databaseConnectionCredentialsObj
   using databaseConnection.connect()
   You need to run this somewhere in your application so that your application is officially connected to the database
 */
-databaseConnection.connect();
 
 /* Exporting the database connection in this method */
 module.exports = databaseConnection;

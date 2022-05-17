@@ -1,4 +1,5 @@
 var path = require('path');
+var mail = require('./../config/mail.js');
 
 module.exports = (app, passport, db) => {
 	var requireAuth = passport.authenticate('local-jwt', {session: false});
@@ -68,6 +69,11 @@ module.exports = (app, passport, db) => {
 	});
 
 	app.post('/api/itinerary/shared', function(req,res){
+		if(!req.body.approved){
+			var subject = "Itinerary Approval";
+			var html = `<html><body><div><p>Hello ${req.body.requester_email},</p><p>${req.session.passport.user.email} has sent you a request to add the ${req.body.itinerary_name} itinerary to your app.</p><br><a href="https://beaniebabiesinfo.com/redirect-to-app">Open In App</a></div></body></html>`;
+			mail.send(req.body.requester_email, subject, html);
+		}
 		var query = `INSERT INTO shared_itineraries (owner_id, requester_id, itinerary_id, approved) VALUES ('${req.body.owner_id}','${req.body.requester_id}','${req.body.itinerary_id}', ${req.body.approved ? 1 : 0})`;
 		db.query(query, (error,queryRes) => {
 			if(error){
@@ -144,7 +150,15 @@ module.exports = (app, passport, db) => {
 			if (err) {
 				return next(err);
 			} else {
-				res.json({user: user, info: info})
+				if (!user) {
+		    	return res.json({success : false, message : 'authentication failed', info: info});
+		    }
+		    req.login(user, function(err){
+					if(err){
+						return next(err);
+					}
+			    return res.status(200).json({success : true, message : 'authentication succeeded', user: user, info: info});
+				});
 			}
 		})(req, res, next);
 	});
@@ -158,11 +172,11 @@ module.exports = (app, passport, db) => {
 		    	return res.json({success : false, message : 'authentication failed', info: info});
 		    }
 		    req.login(user, function(err){
-				if(err){
-					return next(err);
-				}
-		    return res.status(200).json({success : true, message : 'authentication succeeded', user: user, info: info});
-			});
+					if(err){
+						return next(err);
+					}
+			    return res.status(200).json({success : true, message : 'authentication succeeded', user: user, info: info});
+				});
 	  	})(req, res, next);
 	});
 

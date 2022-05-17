@@ -10,6 +10,7 @@ var db = require('./config/database.js');
 
 var routes = require('./controller/routes.js');
 
+db.connect();
 passportConfig(passport, db);
 var app = express();
 
